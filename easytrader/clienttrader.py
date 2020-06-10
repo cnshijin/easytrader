@@ -10,6 +10,7 @@ from typing import Type, Union
 
 import easyutils
 from pywinauto import findwindows, timings
+from pywinauto.controls.common_controls import DateTimePickerWrapper
 
 from easytrader import grid_strategies, pop_dialog_handler
 from easytrader.config import client
@@ -159,6 +160,15 @@ class ClientTrader(IClientTrader):
         self._switch_left_menus(["查询[F4]", "当日成交"])
 
         return self._get_grid_data(self._config.COMMON_GRID_CONTROL_ID)
+    
+    def get_exchangebill(self):
+        self._switch_left_menus(["查询[F4]", "历史成交"])
+        
+        hwnd = self._main.child_window(control_id=1009, class_name="SysDateTimePick32")
+        print(type(hwnd.wrapper_object()))
+        #print(hwnd)
+        #print(hwnd.print_control_identifiers())
+        DateTimePickerWrapper(hwnd.wrapper_object()).set_time(year=2017, month=5, day=23)
 
     @property
     def cancel_entrusts(self):
