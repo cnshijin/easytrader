@@ -160,15 +160,28 @@ class ClientTrader(IClientTrader):
         self._switch_left_menus(["查询[F4]", "当日成交"])
 
         return self._get_grid_data(self._config.COMMON_GRID_CONTROL_ID)
-    
-    def get_exchangebill(self):
+
+    def get_exchangebill(self, startdate, enddate):
+        """
+        查询指定日期内的交割单
+        :param startdate: 2016-02-11
+        :param enddate: 2016-02-11
+        :return:
+        """
         self._switch_left_menus(["查询[F4]", "历史成交"])
-        
+
+        # 设置起始日期
         hwnd = self._main.child_window(control_id=1009, class_name="SysDateTimePick32")
-        print(type(hwnd.wrapper_object()))
-        #print(hwnd)
-        #print(hwnd.print_control_identifiers())
-        DateTimePickerWrapper(hwnd.wrapper_object()).set_time(year=2017, month=5, day=23)
+        [y, m, d] = startdate.split('-')
+        DateTimePickerWrapper(hwnd.wrapper_object()).set_time(year=int(y), month=int(m), day=int(d))
+        # 设置结束日期
+        hwnd = self._main.child_window(control_id=1010, class_name="SysDateTimePick32")
+        [y, m, d] = enddate.split('-')
+        DateTimePickerWrapper(hwnd.wrapper_object()).set_time(year=int(y), month=int(m), day=int(d))
+        time.sleep(0.2)
+        self._main.child_window(control_id=1006, class_name="Button").click()
+
+        return self._get_grid_data(self._config.COMMON_GRID_CONTROL_ID)
 
     @property
     def cancel_entrusts(self):
@@ -462,7 +475,7 @@ class ClientTrader(IClientTrader):
 
     @perf_clock
     def _switch_left_menus(self, path, sleep=0.2):
-        self._get_left_menus_handle().get_item(path).click()
+        self._get_left_menus_handle().get_item(path).select()
         self.wait(sleep)
 
     def _switch_left_menus_by_shortcut(self, shortcut, sleep=0.5):
