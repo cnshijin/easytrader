@@ -166,8 +166,8 @@ class ClientTrader(IClientTrader):
     def get_exchangebill(self, startdate, enddate):
         """
         查询指定日期内的交割单
-        :param startdate: 2016-02-11
-        :param enddate: 2016-02-11
+        :param startdate: date.isoformat string, such as '2016-02-11'
+        :param enddate  : date.isoformat string
         :return:
         """
         self._switch_left_menus(["查询[F4]", "历史成交"])
@@ -185,32 +185,34 @@ class ClientTrader(IClientTrader):
 
         return self._get_grid_data(self._config.COMMON_GRID_CONTROL_ID)
 
-    def get_exchangebill_year(self, opendate=None, year):
+    def get_exchangebill_year(self, year):
+        """
+        查询指定一年的交割单
+        :param year : 年份，int 型
+        :return:
+        """
         bill = []
         range_st = 0
         range_end = 12
         now = date.today()
+        opendate = date.fromisoformat(self._config.OPEN_DATE)
 
-        if(calendar.isleap(year)):
+        assert (year >= opendate.year and year <= now.year), "输入非法年份"
+
+        if calendar.isleap(year):
             month_days = self._config.LEAPYEAR_MONTH_DAYS
         else:
             month_days = self._config.COMMONYEAR_MONTH_DAYS
 
-        if opendate is not None:
-            [y, m, d] = opendate.split('-')
-            assert int(y) == year, "开户日期的年份要与参数 year 相同"
-            range_st  = int(m) - 1
-            startdate = opendate
-            enddate   = str(y) + '-' + str(m) + '-' + str(month_days(range_st))
-            bill.append(self.get_exchangebill(startdate, enddate))
-            range_st  = range_st + 1
+        if opendate.year == year:
+            range_st  = opendate.month - 1
 
         if now.year == year:
             range_end = now.month
 
         for mon in range(range_st, range_end):
-            startdate = str(year) + '-' + str(mon) + '-' + '1'
-            enddate   = str(year) + '-' + str(mon) + '-' + str(month_days(mon))
+            startdate = date(year, mon,               1).isoformat()
+            enddate   = date(year, mon, month_days[mon]).isoformat()
             bill.append(self.get_exchangebill(startdate, enddate))
 
         return bill
