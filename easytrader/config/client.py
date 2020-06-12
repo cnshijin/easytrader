@@ -70,6 +70,9 @@ class CommonConfig:
     AUTO_IPO_MENU_PATH = ["新股申购", "批量新股申购"]
     AUTO_IPO_NUMBER = '申购数量'
 
+    LEAPYEAR_MONTH_DAYS   = (31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+    COMMONYEAR_MONTH_DAYS = (31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+
 
 class YH(CommonConfig):
     DEFAULT_EXE_PATH = r"C:\双子星-中国银河证券\Binarystar.exe"

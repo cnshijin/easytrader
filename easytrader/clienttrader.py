@@ -6,6 +6,8 @@ import os
 import re
 import sys
 import time
+import calendar
+from datetime import date
 from typing import Type, Union
 
 import easyutils
@@ -182,6 +184,36 @@ class ClientTrader(IClientTrader):
         self._main.child_window(control_id=1006, class_name="Button").click()
 
         return self._get_grid_data(self._config.COMMON_GRID_CONTROL_ID)
+
+    def get_exchangebill_year(self, opendate=None, year):
+        bill = []
+        range_st = 0
+        range_end = 12
+        now = date.today()
+
+        if(calendar.isleap(year)):
+            month_days = self._config.LEAPYEAR_MONTH_DAYS
+        else:
+            month_days = self._config.COMMONYEAR_MONTH_DAYS
+
+        if opendate is not None:
+            [y, m, d] = opendate.split('-')
+            assert int(y) == year, "开户日期的年份要与参数 year 相同"
+            range_st  = int(m) - 1
+            startdate = opendate
+            enddate   = str(y) + '-' + str(m) + '-' + str(month_days(range_st))
+            bill.append(self.get_exchangebill(startdate, enddate))
+            range_st  = range_st + 1
+
+        if now.year == year:
+            range_end = now.month
+
+        for mon in range(range_st, range_end):
+            startdate = str(year) + '-' + str(mon) + '-' + '1'
+            enddate   = str(year) + '-' + str(mon) + '-' + str(month_days(mon))
+            bill.append(self.get_exchangebill(startdate, enddate))
+
+        return bill
 
     @property
     def cancel_entrusts(self):
