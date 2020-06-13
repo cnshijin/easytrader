@@ -74,7 +74,7 @@ class CommonConfig:
     OPEN_DATE = '2017-08-01'
 
     LEAPYEAR_MONTH_DAYS   = (31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
-    COMMONYEAR_MONTH_DAYS = (31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+    COMMONYEAR_MONTH_DAYS = (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 
 
 class YH(CommonConfig):
@@ -98,7 +98,7 @@ class YH(CommonConfig):
 
 
 class HT(CommonConfig):
-    DEFAULT_EXE_PATH = r"C:\htzqzyb2\xiadan.exe"
+    DEFAULT_EXE_PATH = r"d:\htzqzyb2\xiadan.exe"
 
     BALANCE_CONTROL_ID_GROUP = {
         "资金余额": 1012,

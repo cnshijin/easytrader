@@ -176,6 +176,7 @@ class ClientTrader(IClientTrader):
         hwnd = self._main.child_window(control_id=1009, class_name="SysDateTimePick32")
         [y, m, d] = startdate.split('-')
         DateTimePickerWrapper(hwnd.wrapper_object()).set_time(year=int(y), month=int(m), day=int(d))
+        time.sleep(0.2)
         # 设置结束日期
         hwnd = self._main.child_window(control_id=1010, class_name="SysDateTimePick32")
         [y, m, d] = enddate.split('-')
@@ -183,6 +184,8 @@ class ClientTrader(IClientTrader):
         time.sleep(0.2)
         self._main.child_window(control_id=1006, class_name="Button").click()
 
+        # 等待数据返回，避免成交数过多时出错
+        time.sleep(0.5)
         return self._get_grid_data(self._config.COMMON_GRID_CONTROL_ID)
 
     def get_exchangebill_year(self, year):
@@ -192,7 +195,7 @@ class ClientTrader(IClientTrader):
         :return:
         """
         bill = []
-        range_st = 0
+        range_st  = 1
         range_end = 12
         now = date.today()
         opendate = date.fromisoformat(self._config.OPEN_DATE)
@@ -205,14 +208,15 @@ class ClientTrader(IClientTrader):
             month_days = self._config.COMMONYEAR_MONTH_DAYS
 
         if opendate.year == year:
-            range_st  = opendate.month - 1
+            range_st  = opendate.month
 
         if now.year == year:
             range_end = now.month
 
-        for mon in range(range_st, range_end):
-            startdate = date(year, mon,               1).isoformat()
-            enddate   = date(year, mon, month_days[mon]).isoformat()
+        for mon in range(range_st, range_end+1):
+            endday    = month_days[mon - 1]
+            startdate = date(year, mon,      1).isoformat()
+            enddate   = date(year, mon, endday).isoformat()
             bill.append(self.get_exchangebill(startdate, enddate))
 
         return bill
