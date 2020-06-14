@@ -170,7 +170,7 @@ class ClientTrader(IClientTrader):
         :param enddate  : date.isoformat string
         :return:
         """
-        self._switch_left_menus(["查询[F4]", "历史成交"])
+        self._switch_left_menus(["查询[F4]", "交 割 单"])
 
         # 设置起始日期
         hwnd = self._main.child_window(control_id=1009, class_name="SysDateTimePick32")
@@ -217,7 +217,7 @@ class ClientTrader(IClientTrader):
             endday    = month_days[mon - 1]
             startdate = date(year, mon,      1).isoformat()
             enddate   = date(year, mon, endday).isoformat()
-            bill.append(self.get_exchangebill(startdate, enddate))
+            bill      = bill + self.get_exchangebill(startdate, enddate)
 
         return bill
 
