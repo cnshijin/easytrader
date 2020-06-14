@@ -197,7 +197,7 @@ class Xls(BaseStrategy):
         self._trader.wait(0.2)
         if self._trader.is_exist_pop_dialog():
             self._trader.app.top_window().Button2.click()
-            self._trader.wait(0.2)
+            self._trader.wait(0.5)
 
         return self._format_grid_data(temp_path)
 
