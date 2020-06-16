@@ -190,11 +190,11 @@ class ClientTrader(IClientTrader):
         :return:
         """
         bill = []
-        month_list = self._get_date_range_list(year)
+        days_list = self._get_date_range_list(year)
 
-        for d in month_list:
-            startdate = date(year, mon, 1).isoformat()
-            enddate   = date(year, mon, d).isoformat()
+        for [mon, days] in days_list:
+            startdate = date(year, mon, 1   ).isoformat()
+            enddate   = date(year, mon, days).isoformat()
             bill      = bill + self.get_exchangebill(startdate, enddate)
 
         return bill
@@ -501,6 +501,7 @@ class ClientTrader(IClientTrader):
         self.wait(sleep)
 
     def _get_date_range_list(self, year):
+        days = []
         range_st = 0
         range_end = 12
         now = date.today()
@@ -519,7 +520,10 @@ class ClientTrader(IClientTrader):
         if now.year == year:
             range_end = now.month
 
-        return month_days[range_st:range_end]
+        for mon in range(range_st, range_end):
+            days.append([mon, month_days[mon]])
+
+        return days
 
     @perf_clock
     def _switch_left_menus(self, path, sleep=0.2):
