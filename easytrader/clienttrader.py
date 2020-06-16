@@ -173,19 +173,14 @@ class ClientTrader(IClientTrader):
         self._switch_left_menus(["查询[F4]", "交 割 单"])
 
         # 设置起始日期
-        hwnd = self._main.child_window(control_id=1009, class_name="SysDateTimePick32")
-        [y, m, d] = startdate.split('-')
-        DateTimePickerWrapper(hwnd.wrapper_object()).set_time(year=int(y), month=int(m), day=int(d))
-        time.sleep(0.2)
+        self._set_date_range(1009, startdate)
         # 设置结束日期
-        hwnd = self._main.child_window(control_id=1010, class_name="SysDateTimePick32")
-        [y, m, d] = enddate.split('-')
-        DateTimePickerWrapper(hwnd.wrapper_object()).set_time(year=int(y), month=int(m), day=int(d))
-        time.sleep(0.2)
-        self._main.child_window(control_id=1006, class_name="Button").click()
+        self._set_date_range(1010, enddate  )
 
+        self._click(1006)
         # 等待数据返回，避免成交数过多时出错
-        time.sleep(0.5)
+        time.sleep(1.0)
+
         return self._get_grid_data(self._config.COMMON_GRID_CONTROL_ID)
 
     def get_exchangebill_year(self, year):
@@ -195,28 +190,11 @@ class ClientTrader(IClientTrader):
         :return:
         """
         bill = []
-        range_st  = 1
-        range_end = 12
-        now = date.today()
-        opendate = date.fromisoformat(self._config.OPEN_DATE)
+        month_list = self._get_date_range_list(year)
 
-        assert (year >= opendate.year and year <= now.year), "输入非法年份"
-
-        if calendar.isleap(year):
-            month_days = self._config.LEAPYEAR_MONTH_DAYS
-        else:
-            month_days = self._config.COMMONYEAR_MONTH_DAYS
-
-        if opendate.year == year:
-            range_st  = opendate.month
-
-        if now.year == year:
-            range_end = now.month
-
-        for mon in range(range_st, range_end+1):
-            endday    = month_days[mon - 1]
-            startdate = date(year, mon,      1).isoformat()
-            enddate   = date(year, mon, endday).isoformat()
+        for d in month_list:
+            startdate = date(year, mon, 1).isoformat()
+            enddate   = date(year, mon, d).isoformat()
             bill      = bill + self.get_exchangebill(startdate, enddate)
 
         return bill
@@ -510,6 +488,38 @@ class ClientTrader(IClientTrader):
         items = self._get_left_menus_handle().roots()
         for item in items:
             item.collapse()
+
+    def _set_date_range(self, control_id, date, sleep=0.2):
+        """
+        设置日历控件的日期
+        :param startdate: date.isoformat string, such as '2016-02-11'
+        :return:
+        """
+        hwnd = self._main.child_window(control_id=control_id, class_name="SysDateTimePick32")
+        [y, m, d] = date.split('-')
+        DateTimePickerWrapper(hwnd.wrapper_object()).set_time(year=int(y), month=int(m), day=int(d))
+        self.wait(sleep)
+
+    def _get_date_range_list(self, year):
+        range_st = 0
+        range_end = 12
+        now = date.today()
+        opendate = date.fromisoformat(self._config.OPEN_DATE)
+
+        assert (year >= opendate.year and year <= now.year), "输入非法年份"
+
+        if calendar.isleap(year):
+            month_days = self._config.LEAPYEAR_MONTH_DAYS
+        else:
+            month_days = self._config.COMMONYEAR_MONTH_DAYS
+
+        if opendate.year == year:
+            range_st = opendate.month - 1
+
+        if now.year == year:
+            range_end = now.month
+
+        return month_days[range_st:range_end]
 
     @perf_clock
     def _switch_left_menus(self, path, sleep=0.2):
