@@ -7,8 +7,10 @@ import re
 import sys
 import time
 import calendar
-from datetime import date
 from typing import Type, Union
+
+import datetime
+from datetime import date
 
 import easyutils
 from pywinauto import findwindows, timings
@@ -190,12 +192,10 @@ class ClientTrader(IClientTrader):
         :return:
         """
         bill = []
-        days_list = self._get_date_range_list(year)
+        range_list = self._get_date_range_list(year)
 
-        for [mon, days] in days_list:
-            startdate = date(year, mon, 1   ).isoformat()
-            enddate   = date(year, mon, days).isoformat()
-            bill      = bill + self.get_exchangebill(startdate, enddate)
+        for [startdate enddate] in days_list:
+            bill = bill + self.get_exchangebill(startdate, enddate)
 
         return bill
 
@@ -501,29 +501,34 @@ class ClientTrader(IClientTrader):
         self.wait(sleep)
 
     def _get_date_range_list(self, year):
-        days = []
-        range_st = 0
-        range_end = 12
+        first_day = date(year,  1,  1)
+        last_day  = date(year, 12, 31)
+
         now = date.today()
         opendate = date.fromisoformat(self._config.OPEN_DATE)
 
         assert (year >= opendate.year and year <= now.year), "输入非法年份"
 
-        if calendar.isleap(year):
-            month_days = self._config.LEAPYEAR_MONTH_DAYS
-        else:
-            month_days = self._config.COMMONYEAR_MONTH_DAYS
-
         if opendate.year == year:
-            range_st = opendate.month - 1
+            first_day = opendate
 
         if now.year == year:
-            range_end = now.month
+            last_day = now
 
-        for mon in range(range_st, range_end):
-            days.append([mon, month_days[mon]])
+        range_list = []
+        delta_01 = datetime.timedelta(days=01)
+        delta_29 = datetime.timedelta(days=29)
+        curr_day = first_day
+        next_day = curr_day + delta_29
 
-        return days
+        while(next_day < last_day):
+            range_list.append([curr_day.isoformat() next_day.isoformat()])
+            curr_day = next_day + delta_01
+            next_day = curr_day + delta_29
+
+        range_list.append([curr_day.isoformat() last_day.isoformat()])
+
+        return range_list
 
     @perf_clock
     def _switch_left_menus(self, path, sleep=0.2):
